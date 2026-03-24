@@ -1,0 +1,86 @@
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(useMaterial3: true, colorSchemeSeed: Colors.blue),
+      home: const TeamProfileScreen(),
+    );
+  }
+}
+
+class TeamProfileScreen extends StatelessWidget {
+  const TeamProfileScreen({super.key});
+  final List<Map<String, String>> members = const [
+    {
+      'name': 'Nguyễn Hoàng Phúc',
+      'role': 'Trưởng nhóm',
+      'id': '20220316',
+      'email': 'nghoangphuc13012004@gmail.com'
+    },
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Giới thiệu các thành viên trong nhóm', 
+            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+        centerTitle: true,
+        backgroundColor: Colors.blueAccent,
+      ),
+      body: Container(
+        padding: const EdgeInsets.all(16.0),
+        child: ListView.builder(
+          itemCount: members.length,
+          itemBuilder: (context, index) {
+            return Card(
+              elevation: 4,
+              margin: const EdgeInsets.only(bottom: 16),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 35,
+                      backgroundColor: Colors.blue.shade100,
+                      child: Text(members[index]['name']![0], 
+                          style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                    ),
+                    const SizedBox(width: 20),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            members[index]['name']!,
+                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 4),
+                          Text('Chức vụ: ${members[index]['role']}', 
+                              style: TextStyle(color: Colors.blue.shade700)),
+                          Text('MSV: ${members[index]['id']}'),
+                          Text('Email: ${members[index]['email']}', 
+                              style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
