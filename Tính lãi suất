@@ -1,0 +1,169 @@
+import 'dart:math';
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(useMaterial3: true, colorSchemeSeed: Colors.indigo),
+      home: const DoubleMoneyUI(),
+    );
+  }
+}
+
+class DoubleMoneyUI extends StatefulWidget {
+  const DoubleMoneyUI({super.key});
+
+  @override
+  State<DoubleMoneyUI> createState() => _DoubleMoneyUIState();
+}
+
+class _DoubleMoneyUIState extends State<DoubleMoneyUI> {
+  final moneyController = TextEditingController();
+  final rateController = TextEditingController();
+  
+  double years = 0;
+  double finalAmount = 0;
+  double totalInterest = 0;
+
+  void calculate() {
+    double money = double.tryParse(moneyController.text) ?? 0;
+    double rate = double.tryParse(rateController.text) ?? 0;
+
+    if (money > 0 && rate > 0) {
+      double r = rate / 100;
+      setState(() {
+        // 1. Tính số năm để gấp đôi (Logarit)
+        years = log(2) / log(1 + r);
+        
+        // 2. Tính số tiền cuối cùng (A = P * (1 + r)^n)
+        finalAmount = money * pow((1 + r), years);
+        
+        // 3. Tính tiền lãi
+        totalInterest = finalAmount - money;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFC),
+      appBar: AppBar(
+        title: const Text("Phân Tích Đầu Tư", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+        backgroundColor: Colors.indigo,
+        centerTitle: true,
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          children: [
+            // Card Nhập liệu
+            _buildGlassCard(
+              child: Column(
+                children: [
+                  _buildInput(moneyController, "Vốn đầu tư (VNĐ)", Icons.payments),
+                  const SizedBox(height: 15),
+                  _buildInput(rateController, "Lãi suất kỳ vọng (%/năm)", Icons.trending_up),
+                  const SizedBox(height: 20),
+                  ElevatedButton(
+                    onPressed: calculate,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.indigo,
+                      foregroundColor: Colors.white,
+                      minimumSize: const Size.fromHeight(50),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: const Text("PHÂN TÍCH DỮ LIỆU", style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                ],
+              ),
+            ),
+            
+            const SizedBox(height: 25),
+
+            // Hiển thị kết quả chính và chi tiết
+            if (years > 0) ...[
+              _buildResultHeader(),
+              const SizedBox(height: 20),
+              _buildDetailRow("Tổng tiền nhận được:", finalAmount, isMoney: true),
+              _buildDetailRow("Tiền lãi thuần:", totalInterest, isMoney: true),
+              _buildDetailRow("Ước tính theo Quy tắc 72:", 72 / (double.tryParse(rateController.text) ?? 1), suffix: " năm"),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  // --- WIDGET HỖ TRỢ GIAO DIỆN ---
+
+  Widget _buildGlassCard({required Widget child}) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 15, offset: const Offset(0, 5))],
+      ),
+      child: child,
+    );
+  }
+
+  Widget _buildInput(TextEditingController controller, String label, IconData icon) {
+    return TextField(
+      controller: controller,
+      keyboardType: TextInputType.number,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon, color: Colors.indigo),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        filled: true,
+        fillColor: Colors.grey[50],
+      ),
+    );
+  }
+
+  Widget _buildResultHeader() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(25),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(colors: [Colors.indigo, Colors.blueAccent]),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        children: [
+          const Text("Thời gian để tài sản gấp đôi", style: TextStyle(color: Colors.white70)),
+          Text("${years.toStringAsFixed(1)} Năm", 
+            style: const TextStyle(color: Colors.white, fontSize: 45, fontWeight: FontWeight.w900)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDetailRow(String title, double value, {bool isMoney = false, String suffix = ""}) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(15),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.indigo.withValues(alpha: 0.1))),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(title, style: const TextStyle(color: Colors.black87)),
+          Text(
+            isMoney ? "${value.toStringAsFixed(0)}đ" : "${value.toStringAsFixed(1)}$suffix",
+            style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.indigo),
+          ),
+        ],
+      ),
+    );
+  }
+}
